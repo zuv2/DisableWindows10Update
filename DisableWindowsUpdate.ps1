@@ -120,6 +120,7 @@ try {
     } else { Write-WARN '현재 Windows 릴리스 문자열을 확인하지 못함' }
 } catch { Write-FAIL "버전 고정: $($_.Exception.Message)" }
 
+# WaaSMedicSvc is protected by Windows; Standard-mode disabling is best-effort and may be reverted.
 # [3/8] WaaSMedicSvc
 Write-Step 'WaaSMedicSvc 처리' 3
 $medicRegNative = 'SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
@@ -233,6 +234,22 @@ foreach ($svc in $servicesToDisable) {
         try { Set-RegValue -Path $svcPath -Name 'Start' -Value 4 -Type DWord; Write-OK "$svc Start=4 설정" }
         catch { Write-WARN "$svc Start=4 실패: $($_.Exception.Message)" }
     } else { Write-INFO "${svc}: 서비스 키 없음" }
+}
+
+
+function Invoke-NativeChecked {
+    param(
+        [Parameter(Mandatory=$true)][string]$FilePath,
+        [Parameter(Mandatory=$true)][string[]]$ArgumentList,
+        [Parameter(Mandatory=$true)][string]$Description
+    )
+    & $FilePath @ArgumentList 2>$null | Out-Null
+    $code = $LASTEXITCODE
+    if ($code -ne 0) {
+        Write-WARN ("{0} 실패 (ExitCode={1})" -f $Description, $code)
+        return $false
+    }
+    return $true
 }
 
 function Invoke-FolderVaccination {

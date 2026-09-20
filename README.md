@@ -68,3 +68,27 @@ MIT License. 자세한 내용은 `LICENSE`를 참조하세요.
 - BAT는 현재 작업 폴더에 의존하지 않고 `%~dp0` 기준의 절대 경로로 PowerShell 스크립트를 실행합니다.
 - PowerShell 스크립트는 Windows PowerShell 5.1에서 한글 문자열이 깨지지 않도록 UTF-8 BOM으로 저장되어 있습니다.
 - `DisableWindowsUpdate.bat`과 `DisableWindowsUpdate.ps1`, 또는 `EnableWindowsUpdate.bat`과 `EnableWindowsUpdate.ps1`은 각각 같은 폴더에 있어야 합니다.
+
+
+## 동작 범위와 복구 모델
+
+### Standard / Aggressive
+
+`Standard`는 시스템의 다른 기능에 대한 부작용을 줄이는 쪽을 우선합니다. 특히 BITS(Background Intelligent Transfer Service)는 Windows Update 전용 서비스가 아니므로 Standard에서는 비활성화하지 않습니다.
+
+`Aggressive`는 더 강한 차단을 원하는 경우에만 사용합니다. BITS 비활성화, 보호된 WaaSMedicSvc 관련 ACL 변경, 시스템 DLL 처리처럼 영향 범위가 큰 작업이 포함될 수 있습니다.
+
+WaaSMedicSvc는 Windows가 보호/복구하는 구성요소이므로 Standard에서의 비활성화는 best-effort입니다. 재부팅이나 Windows 자체 복구 과정에서 다시 활성화될 수 있습니다.
+
+### Enable은 스냅샷 복원이 아닙니다
+
+`EnableWindowsUpdate`는 Disable 실행 직전의 시스템 상태를 저장해 두었다가 그대로 되돌리는 도구가 아닙니다. Windows Update가 다시 동작할 수 있도록 이 프로젝트가 변경한 가역적인 정책/서비스 설정을 보수적으로 재활성화합니다.
+
+따라서 다음 작업은 의도적으로 하지 않습니다.
+
+- 기존 예약 작업 상태를 추측하여 강제로 활성화
+- 삭제된 SoftwareDistribution 캐시 복원
+- 사용자가 원래 지정했던 서비스 시작 유형을 추측하여 완전 복원
+- Aggressive 모드에서 변경된 보호 ACL/DLL을 불확실한 상태에서 자동 복원
+
+BITS는 Windows Update 외의 Windows 기능 및 응용 프로그램에서도 사용할 수 있습니다. Aggressive 모드에서 BITS를 비활성화하면 Microsoft Store 등을 포함한 다른 다운로드 기능에 영향을 줄 수 있습니다.
