@@ -60,3 +60,11 @@ Windows 10에서 Windows Update 자동 동작을 제어하기 위한 PowerShell/
 ## License
 
 MIT License. 자세한 내용은 `LICENSE`를 참조하세요.
+
+
+## 배포/실행 관련
+
+- BAT 런처는 `cmd.exe` 코드 페이지 문제를 피하기 위해 ASCII로 유지합니다.
+- BAT는 현재 작업 폴더에 의존하지 않고 `%~dp0` 기준의 절대 경로로 PowerShell 스크립트를 실행합니다.
+- PowerShell 스크립트는 Windows PowerShell 5.1에서 한글 문자열이 깨지지 않도록 UTF-8 BOM으로 저장되어 있습니다.
+- `DisableWindowsUpdate.bat`과 `DisableWindowsUpdate.ps1`, 또는 `EnableWindowsUpdate.bat`과 `EnableWindowsUpdate.ps1`은 각각 같은 폴더에 있어야 합니다.
